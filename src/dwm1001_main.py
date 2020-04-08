@@ -26,8 +26,8 @@ from tf.transformations import quaternion_from_euler #added by arun
 #import sys
 #import copy
 #import numpy
-global lastposx=0;
-global lastposy=0;
+global lastposx=0
+global lastposy=0
 #added by arun end
 # initialize the node
 rospy.init_node('Localizer_DWM1001', anonymous=False)
