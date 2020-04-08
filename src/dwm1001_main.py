@@ -26,8 +26,10 @@ from tf.transformations import quaternion_from_euler #added by arun
 #import sys
 #import copy
 #import numpy
-global lastposx=0
-global lastposy=0
+global lastposx
+global lastposy
+lastposx=0
+lastposy=0
 #added by arun end
 # initialize the node
 rospy.init_node('Localizer_DWM1001', anonymous=False)
@@ -182,21 +184,21 @@ class dwm1001_localizer:
                           float(networkDataArray[networkDataArray.index(network) + 3]),)
                 #added by arun
 
-                  tagpos=PoseStamped()
-                  # tagpos.header.frame_id = self._robot.get_planning_frame()
-                  tagpos.header.stamp = rospy.Time.now()
+                tagpos=PoseStamped()
+                # tagpos.header.frame_id = self._robot.get_planning_frame()
+                tagpos.header.stamp = rospy.Time.now()
 
-                  tagpos.pose.position.x = Tag(1)
-                  tagpos.pose.position.y = Tag(2)
-                  tagpos.pose.position.z = Tag(3)
+                tagpos.pose.position.x = Tag(1)
+                tagpos.pose.position.y = Tag(2)
+                tagpos.pose.position.z = Tag(3)
 
-                  yaw_ = atan2(tagpos.pose.position.x - lastposx, tagpos.pose.position.y - lastposy)
-                  # roll_ = 0
-                  # pitch_ = 0
-                  lastposx=tagpos.pose.position.x
-                  lastposy=tagpos.pose.position.y
-                  q = quaternion_from_euler(0.0, 0.0, yaw_) # yaw in radian
-                  tagpos.pose.orientation = Quaternion(*q)
+                yaw_ = atan2(tagpos.pose.position.x - lastposx, tagpos.pose.position.y - lastposy)
+                # roll_ = 0
+                # pitch_ = 0
+                lastposx=tagpos.pose.position.x
+                lastposy=tagpos.pose.position.y
+                q = quaternion_from_euler(0.0, 0.0, yaw_) # yaw in radian
+                tagpos.pose.orientation = Quaternion(*q)
                 
                 pub_anchor2 = rospy.Publisher('/dwm1001/tagpos', PoseStamped, queue_size=1)
                 pub_anchor2.publish(tagpos)
