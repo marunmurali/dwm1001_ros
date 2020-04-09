@@ -11,25 +11,23 @@ __email__      = SYS_DEFS.EMAIL
 __status__     = SYS_DEFS.STATUS
 
 
-import rospy, time, serial, os
+import rospy, time, serial, os, numpy
 from dwm1001_apiCommands            import DWM1001_API_COMMANDS
 from dynamic_reconfigure.server     import Server
 from localizer_dwm1001.cfg          import DWM1001_Tune_SerialConfig
 from localizer_dwm1001.msg          import Anchor
 from localizer_dwm1001.msg          import Tag
 from geometry_msgs.msg              import PoseStamped #added by arun
+from geometry_msgs.msg              import Quaternion #added by arun
 from localizer_dwm1001.srv          import Anchor_0
+#from pyquaternion import Quaternion
 
 from tf.transformations import quaternion_from_euler #added by arun
 
 #added by arun
-#import sys
+from math  import atan2
 #import copy
-#import numpy
-global lastposx
-global lastposy
-lastposx=0
-lastposy=0
+CACHE = None
 #added by arun end
 # initialize the node
 rospy.init_node('Localizer_DWM1001', anonymous=False)
@@ -148,7 +146,8 @@ class dwm1001_localizer:
         :returns: none
 
         """
-
+	lastposx=0.0
+	lastposy=0.0
         # loop trough the array given by the serial port
         for network in networkDataArray:
 
@@ -185,12 +184,12 @@ class dwm1001_localizer:
                 #added by arun
 
                 tagpos=PoseStamped()
-                # tagpos.header.frame_id = self._robot.get_planning_frame()
+                tagpos.header.frame_id = "map"
                 tagpos.header.stamp = rospy.Time.now()
 
-                tagpos.pose.position.x = Tag(1)
-                tagpos.pose.position.y = Tag(2)
-                tagpos.pose.position.z = Tag(3)
+                tagpos.pose.position.x = float(networkDataArray[networkDataArray.index(network) + 1])
+                tagpos.pose.position.y = float(networkDataArray[networkDataArray.index(network) + 2])
+                tagpos.pose.position.z = float(networkDataArray[networkDataArray.index(network) + 3])
 
                 yaw_ = atan2(tagpos.pose.position.x - lastposx, tagpos.pose.position.y - lastposy)
                 # roll_ = 0
@@ -200,22 +199,40 @@ class dwm1001_localizer:
                 q = quaternion_from_euler(0.0, 0.0, yaw_) # yaw in radian
                 tagpos.pose.orientation = Quaternion(*q)
                 
-                pub_anchor2 = rospy.Publisher('/dwm1001/tagpos', PoseStamped, queue_size=1)
+                pub_anchor2 = rospy.Publisher('/dwm1001/tagpos', PoseStamped, queue_size=10)
+		#rospy.sleep(1)
                 pub_anchor2.publish(tagpos)
+
+                rospy.loginfo("tagpos: "
+                              + " position x: "
+                              + str(tagpos.pose.position.x)
+                              + " position y: "
+                              + str(tagpos.pose.position.y)
+                              + " position z: "
+                              + str(tagpos.pose.position.z)
+			      + " orientation x: "
+                              + str(tagpos.pose.orientation.x)
+                              + " orientation y: "
+                              + str(tagpos.pose.orientation.y)
+                              + " orientation z: "
+                              + str(tagpos.pose.orientation.z)
+			      + " orientation w: "
+                              + str(tagpos.pose.orientation.w))
+
                 #added by arun end
                 # publish tag
                 pub_anchor = rospy.Publisher('/dwm1001/tag', Tag, queue_size=1)
+		#rospy.sleep(1)
                 pub_anchor.publish(tag)
 
-                rospy.loginfo("Tag: "
+
+		rospy.loginfo("Tag: "
                               + " x: "
                               + str(tag.x)
                               + " y: "
                               + str(tag.y)
                               + " z: "
                               + str(tag.z))
-
-
 
 
 

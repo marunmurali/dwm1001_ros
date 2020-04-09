@@ -8,6 +8,7 @@ from visualization_msgs.msg                         import (InteractiveMarkerCon
 from geometry_msgs.msg                              import Point
 from localizer_dwm1001.msg                          import Anchor
 from localizer_dwm1001.msg                          import Tag
+from geometry_msgs.msg              		    import PoseStamped #added by arun
 
 
 server       = None
@@ -302,6 +303,31 @@ class DisplayInRviz:
         except ValueError:
            rospy.loginfo("Value error")
 
+    def TagposCallback(self,data):
+        """
+        Callback from topic /dwm1001/tagpos
+
+        :param: data of tag
+
+        :returns:
+
+        """
+        global server
+
+        # Get the coordinates of the Tag in this format 0 0 0, then split this string using .split() function
+        try:
+            # Create a new marker with passed coordinates
+            position = Point(data.pose.position.x, data.pose.position.y, data.pose.position.z)
+            # Add description to the marker
+            # self.makeTagMarker(position2, "Tag")
+            # Publish marker
+            # server.applyChanges()
+
+            # TODO remove this after, Debugging purpose
+            #rospy.loginfo("Tagpos x: " + str(data.position.x) + " y: " + str(data.position.y) + " z: " + str(data.position.z))
+
+        except ValueError:
+           rospy.loginfo("Value error")
 
 
     def start(self):
@@ -310,6 +336,7 @@ class DisplayInRviz:
         rospy.Subscriber("/dwm1001/anchor2", Anchor, self.Anchor2callback)
         rospy.Subscriber("/dwm1001/anchor3", Anchor, self.Anchor3callback)
         rospy.Subscriber("/dwm1001/tag"    , Tag   , self.TagCallback)
+        rospy.Subscriber("/dwm1001/tagpos" , PoseStamped   , self.TagposCallback)
         rospy.spin()
 
 
